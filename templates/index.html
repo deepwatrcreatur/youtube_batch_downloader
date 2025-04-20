@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta http-equiv="refresh" content="5"> <!-- Reload page every 15 seconds -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube Downloader</title>
     <style>
+        /* --- (Keep existing styles) --- */
         body { font-family: sans-serif; margin: 20px; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; }
-        input[type="text"], input[type="url"] { width: 90%; max-width: 500px; padding: 8px; }
+        /* Modify input style for textarea */
+        textarea { width: 90%; max-width: 600px; min-height: 100px; padding: 8px; font-family: monospace; }
         button { padding: 10px 15px; cursor: pointer; }
         .queue, .status { margin-top: 20px; border: 1px solid #ccc; padding: 15px; }
         .queue h3, .status h3 { margin-top: 0; }
@@ -19,19 +22,38 @@
         .status-downloading { color: blue; }
         .status-completed { color: green; }
         .status-failed { color: red; }
+        /* Styles for flash messages */
+        .flash { padding: 10px; margin-bottom: 15px; border: 1px solid transparent; border-radius: 4px; }
+        .flash-success { color: #155724; background-color: #d4edda; border-color: #c3e6cb; }
+        .flash-error { color: #721c24; background-color: #f8d7da; border-color: #f5c6cb; }
+        .flash-warning { color: #856404; background-color: #fff3cd; border-color: #ffeeba; }
+        .flash-info { color: #0c5460; background-color: #d1ecf1; border-color: #bee5eb; }
     </style>
 </head>
 <body>
-    <h1>YouTube Downloader</h1>
+    <h1>YouTube Downloader - Batch Mode</h1>
 
-    <form action="/get_formats" method="post">
-        <div class="form-group">
-            <label for="url">YouTube URL:</label>
-            <input type="url" id="url" name="url" required placeholder="https://www.youtube.com/watch?v=...">
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div>
+          {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
         </div>
-        <button type="submit">Get Formats</button>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Modified form for batch input -->
+    <form action="{{ url_for('process_batch') }}" method="post">
+        <div class="form-group">
+            <label for="urls_input">YouTube URLs or Video IDs (one per line):</label>
+            <textarea id="urls_input" name="urls_input" required placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ&#10;https://youtu.be/gp0Vi5OJO-k&#10;abcdef12345"></textarea>
+        </div>
+        <button type="submit">Process Links</button>
     </form>
 
+    <!-- Status section remains the same -->
     <div class="status">
         <h3>Download Status</h3>
         {% if download_status %}
@@ -46,16 +68,9 @@
             {% endfor %}
         </ul>
         {% else %}
-        <p>No downloads yet.</p>
+        <p>No downloads processed yet.</p>
         {% endif %}
     </div>
 
-    <!-- Optional: Add auto-refresh for status -->
-    <!-- <script>
-        setTimeout(() => {
-            window.location.reload();
-        }, 15000); // Refresh every 15 seconds
-    </script> -->
 </body>
 </html>
-
