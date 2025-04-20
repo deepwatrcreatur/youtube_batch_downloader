@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ batch_title }} - Configure Formats</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        h1, h2 { margin-bottom: 10px; }
+        ul { list-style: none; padding: 0; }
+        li { border: 1px solid #eee; padding: 10px 15px; margin-bottom: 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+        .video-info { flex-grow: 1; margin-right: 15px; }
+        .video-info strong { display: block; margin-bottom: 3px; }
+        .video-info small { color: #555; }
+        .video-actions a, .video-actions span { display: inline-block; padding: 5px 10px; text-decoration: none; border-radius: 3px; }
+        .action-configure { background-color: #007bff; color: white; }
+        .action-configured { background-color: #28a745; color: white; }
+        .action-error { background-color: #dc3545; color: white; cursor: help; } /* Add cursor */
+        .queue-button { padding: 12px 20px; background-color: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1em; margin-top: 20px; }
+        .queue-button:disabled { background-color: #ccc; cursor: not-allowed; }
+        .flash { padding: 10px; margin-bottom: 15px; border: 1px solid transparent; border-radius: 4px; }
+        .flash-success { color: #155724; background-color: #d4edda; border-color: #c3e6cb; }
+        .flash-error { color: #721c24; background-color: #f8d7da; border-color: #f5c6cb; }
+        .flash-warning { color: #856404; background-color: #fff3cd; border-color: #ffeeba; }
+        .flash-info { color: #0c5460; background-color: #d1ecf1; border-color: #bee5eb; }
+    </style>
+</head>
+<body>
+    <h1>{{ batch_title }}</h1>
+    <h2>Configure Download Formats</h2>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div>
+          {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% if batch_urls %}
+    <form action="{{ url_for('queue_batch') }}" method="post" id="queue-form">
+        <ul>
+            {% for item in batch_urls %}
+            <li>
+                <div class="video-info">
+                    <strong>{{ item.title or item.id }}</strong>
+                    <small>Original Input: {{ item.original }}</small><br>
+                    <small>URL: <a href="{{ item.url }}" target="_blank">{{ item.url }}</a></small>
+                    {% if item.selected_formats %}
+                        <small style="display: block; margin-top: 5px;">Selected: Video={{ item.selected_formats.video }}, Audio={{ item.selected_formats.audio }}</small>
+                    {% endif %}
+                </div>
+                <div class="video-actions">
+                    {% if item.status == 'pending' %}
+                        <a href="{{ url_for('select_formats_for_batch', index=loop.index0) }}" class="action-configure">Select Formats</a>
+                    {% elif item.status == 'configured' %}
+                        <a href="{{ url_for('select_formats_for_batch', index=loop.index0) }}" class="action-configured" title="Formats selected. Click to change.">Configured ✓</a>
+                    {% elif item.status == 'error' %}
+                        <span class="action-error" title="{{ item.error | default('Unknown error', true) }}">Error!</span>
+                    {% endif %}
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        <button type="submit" class="queue-button" id="queue-btn">Add Configured Videos to Queue</button>
+    </form>
+    {% else %}
+    <p>No videos found in this batch.</p>
+    {% endif %}
+
+    <p style="margin-top: 20px;"><a href="{{ url_for('index') }}">Back to Home (Cancel Batch)</a></p>
+
+    <script>
+        // Optional: Disable queue button if no items are configured
+        document.addEventListener('DOMContentLoaded', function() {
+            const configuredItems = {{ batch_urls | selectattr('status', 'equalto', 'configured') | list | length }};
+            const queueButton = document.getElementById('queue-btn');
+            if (configuredItems === 0) {
+                queueButton.disabled = true;
+                queueButton.title = "No videos have formats selected yet.";
+            }
+        });
+    </script>
+
+</body>
+</html>
+
