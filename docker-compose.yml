@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  youtube-downloader:
+    build: . # Build the image from the Dockerfile in the current directory
+    container_name: youtube_dl_webui
+    ports:
+      - "5000:5000" # Map host port 5000 to container port 5000
+    volumes:
+      # Mount a local directory 'downloads' into the container's '/app/downloads'
+      # This persists downloads outside the container. Create 'downloads' locally first.
+      - /DATA/Downloads:/app/downloads
+    restart: unless-stopped
+    # Optional: Add resource limits
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '1.0'
+    #       memory: 512M
+

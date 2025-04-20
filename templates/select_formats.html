@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Formats</title>
+     <style>
+        body { font-family: sans-serif; margin: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; }
+        button { padding: 10px 15px; cursor: pointer; }
+        table { border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .error { color: red; font-weight: bold; }
+        h2 { margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <h1>Select Formats for:</h1>
+    <p><a href="{{ url }}" target="_blank">{{ title }}</a></p>
+    <p>URL: {{ url }}</p>
+
+    {% if error %}
+        <p class="error">Error fetching formats: {{ error }}</p>
+        <p><a href="/">Try another URL</a></p>
+    {% else %}
+        <form action="/add_download" method="post">
+            <input type="hidden" name="url" value="{{ url }}">
+            <input type="hidden" name="title" value="{{ title }}">
+
+            <h2>Video Formats</h2>
+            {% if video_formats %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Select</th>
+                        <th>ID</th>
+                        <th>Ext</th>
+                        <th>Resolution</th>
+                        <th>FPS</th>
+                        <th>VCodec</th>
+                        <th>ACodec</th>
+                        <th>Size (Est.)</th>
+                        <th>Note</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><input type="radio" name="video_format" value="none" checked></td>
+                        <td colspan="8"><i>None (Download Audio Only)</i></td>
+                    </tr>
+                    {% for f in video_formats %}
+                    <tr>
+                        <td><input type="radio" name="video_format" value="{{ f.format_id }}"></td>
+                        <td>{{ f.format_id }}</td>
+                        <td>{{ f.ext }}</td>
+                        <td>{{ f.resolution }}</td>
+                        <td>{{ f.fps | default('-', true) }}</td>
+                        <td>{{ f.vcodec | default('N/A', true) }}</td>
+                        <td>{{ f.acodec | default('N/A', true) }}</td>
+                        <td>{{ f.filesize_approx | default('N/A', true) }}</td>
+                        <td>{{ f.format_note | default('', true) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>No separate video formats found.</p>
+            <input type="hidden" name="video_format" value="none">
+            {% endif %}
+
+            <h2>Audio Formats</h2>
+             {% if audio_formats %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Select</th>
+                        <th>ID</th>
+                        <th>Ext</th>
+                        <th>ACodec</th>
+                        <th>Bitrate (ABR)</th>
+                        <th>Size (Est.)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                     <tr>
+                        <td><input type="radio" name="audio_format" value="none" checked></td>
+                        <td colspan="5"><i>None (Download Video Only)</i></td>
+                    </tr>
+                    {% for f in audio_formats %}
+                    <tr>
+                        <td><input type="radio" name="audio_format" value="{{ f.format_id }}"></td>
+                        <td>{{ f.format_id }}</td>
+                        <td>{{ f.ext }}</td>
+                        <td>{{ f.acodec | default('N/A', true) }}</td>
+                        <td>{{ f.abr | default('-', true) }} kbps</td>
+                        <td>{{ f.filesize_approx | default('N/A', true) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>No separate audio formats found.</p>
+            <input type="hidden" name="audio_format" value="none">
+            {% endif %}
+
+            <div class="form-group" style="margin-top: 20px;">
+                 <p>Note: If you select both video and audio, they will be merged into an MKV file.</p>
+                <button type="submit">Add to Download Queue</button>
+            </div>
+        </form>
+    {% endif %}
+
+    <p><a href="/">Back to Home</a></p>
+
+</body>
+</html>
+

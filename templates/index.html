@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Downloader</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; }
+        input[type="text"], input[type="url"] { width: 90%; max-width: 500px; padding: 8px; }
+        button { padding: 10px 15px; cursor: pointer; }
+        .queue, .status { margin-top: 20px; border: 1px solid #ccc; padding: 15px; }
+        .queue h3, .status h3 { margin-top: 0; }
+        ul { list-style: none; padding: 0; }
+        li { margin-bottom: 8px; padding: 5px; border-bottom: 1px dashed #eee; }
+        li span { display: inline-block; min-width: 80px; font-weight: bold; }
+        .status-queued { color: orange; }
+        .status-downloading { color: blue; }
+        .status-completed { color: green; }
+        .status-failed { color: red; }
+    </style>
+</head>
+<body>
+    <h1>YouTube Downloader</h1>
+
+    <form action="/get_formats" method="post">
+        <div class="form-group">
+            <label for="url">YouTube URL:</label>
+            <input type="url" id="url" name="url" required placeholder="https://www.youtube.com/watch?v=...">
+        </div>
+        <button type="submit">Get Formats</button>
+    </form>
+
+    <div class="status">
+        <h3>Download Status</h3>
+        {% if download_status %}
+        <ul>
+            {% for item in download_status | reverse %}
+            <li>
+                <span>{{ item.id }}:</span>
+                <span class="status-{{ item.status }}">{{ item.status | capitalize }}</span> -
+                <small>{{ item.title | default('Fetching title...', true) }}</small>
+                {% if item.error %} <br><small style="color: red;">Error: {{ item.error }}</small> {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No downloads yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- Optional: Add auto-refresh for status -->
+    <!-- <script>
+        setTimeout(() => {
+            window.location.reload();
+        }, 15000); // Refresh every 15 seconds
+    </script> -->
+</body>
+</html>
+

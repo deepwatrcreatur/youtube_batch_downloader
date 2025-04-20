@@ -1,0 +1,4 @@
+Flask>=2.0
+yt-dlp>=2023.11.16 # Use a recent version
+requests # Often useful, though yt-dlp might bundle it
+
